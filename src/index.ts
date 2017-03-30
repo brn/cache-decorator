@@ -65,9 +65,6 @@ export type CacheOption = {
 }
 
 
-const GLOBAL_CACHE = {};
-
-
 /**
  * Controll caches lifetime.
  */
@@ -80,45 +77,35 @@ class Cache {
 
 
   public set(val: any, args: any[], context: any, key: symbol): any {
-    if (this.scope === CacheScope.INSTANCE) {
-      this.setCache(context, key, val, args);
-    } else {
-      this.setCache(GLOBAL_CACHE, key, val, args);
-    }
-    return val;
-  }
-
-
-  private setCache(cacheContext: any, key: symbol, value: any, args: any[]) {
-    if (cacheContext[key]) {
-      const result = cacheContext[key].filter(([value, cachedArgs]) => this.compare(cachedArgs, args));
+    if (context[key]) {
+      const result = context[key].filter(([value, cachedArgs]) => this.compare(cachedArgs, args));
       if (!result.length) {
-        cacheContext[key].push([value, args])
+        context[key].push([val, args])
       }
     } else {
-      cacheContext[key] = [[value, args]];
+      context[key] = [[val, args]];
     }
     if (this.type === CacheType.TTL) {
       if (!this.ttl) {
         throw new Error('ttl required in CacheType.TTL');
       }
-      setTimeout(() => cacheContext[key] = null, this.ttl);
+      setTimeout(() => context[key] = null, this.ttl);
     }
+    return val;
   }
 
 
   public get(context: any, key: symbol, args: any[]): any {
     if (this.type === CacheType.MEMO) {
-      if (this.scope === CacheScope.INSTANCE) {
-        const caches = context[key] || [];
-        return caches.filter(([value, cachedArgs]) => this.compare(cachedArgs, args))[0];
-      }
-      const caches = GLOBAL_CACHE[key] || [];
+      const caches = context[key] || [];
       return caches.filter(([value, cachedArgs]) => this.compare(cachedArgs, args))[0];
     }
-    return this.scope === CacheScope.INSTANCE? (context[key] || [])[0]: (GLOBAL_CACHE[key] || [])[0];
+    return (context[key] || [])[0];
   }
 }
+
+
+const GLOBAL_SYMBOL = Symbol('__global_cache');
 
 
 /**
@@ -138,6 +125,10 @@ export function cache(param: CacheOption = {}) {
     const propertyDescriptor = Object.getOwnPropertyDescriptor(target, `${propertyKey}`);
     const symbolKey = Symbol(`__cache_key__${typeof target === 'function'? '__static:': ''}${propertyKey}`);
 
+    if (scope === CacheScope.GLOABL) {
+      target[GLOBAL_SYMBOL] = {};
+    }
+    
     if (propertyDescriptor.set) {
       throw new Error('Setter function can\'t be memozied.');
     }
@@ -155,7 +146,7 @@ export function cache(param: CacheOption = {}) {
         configurable: propertyDescriptor.configurable,
         enumerable: propertyDescriptor.enumerable,
         get() {
-          return memoizedFn(this, 'get', []);
+          return memoizedFn(scope === CacheScope.INSTANCE? this: target[GLOBAL_SYMBOL], 'get', []);
         }
       };
       if (propertyDescriptor.set) {
@@ -173,7 +164,7 @@ export function cache(param: CacheOption = {}) {
       writable: propertyDescriptor.writable,
       enumerable: propertyDescriptor.enumerable,
       value(...args) {
-        return memoizedFn(this, 'value', args);
+        return memoizedFn(scope === CacheScope.INSTANCE? this: target[GLOBAL_SYMBOL], 'value', args);
       }
     };
   }
