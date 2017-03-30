@@ -1,6 +1,6 @@
 {
   "name": "cache-decorator",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "javascript method/function cache decorator.",
   "main": "dist/index.js",
   "scripts": {
