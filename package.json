@@ -40,6 +40,7 @@
     "del": "^2.2.2",
     "fs-extra": "^2.1.2",
     "fueldom": "0.1.2",
+    "gulp": "^3.9.1",
     "gulp-browserify": "^0.5.1",
     "gulp-check-filesize": "^2.0.1",
     "gulp-derequire": "^2.1.0",
