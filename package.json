@@ -26,9 +26,6 @@
     "url": "https://github.com/brn/cache-decorator/issues"
   },
   "homepage": "https://github.com/brn/cache-decorator#readme",
-  "peerDependencies": {
-    "fueldom": "^0.1.0"
-  },
   "devDependencies": {
     "@types/chai": "^3.4.35",
     "@types/mocha": "^2.2.39",
