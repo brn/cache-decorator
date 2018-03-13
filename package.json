@@ -2,8 +2,10 @@
   "name": "cache-decorator",
   "version": "0.1.3",
   "description": "javascript method/function cache decorator.",
-  "main": "dist/index.js",
+  "main": "dist/index.bundle.js",
   "scripts": {
+    "build": "gulp",
+    "prepare": "npm run build",
     "release": "gulp release",
     "minify": "gulp",
     "ut": "gulp test-chrome",
@@ -19,6 +21,9 @@
     "dom",
     "react",
     "fuel"
+  ],
+  "files": [
+    "dist/*"
   ],
   "author": "brn",
   "license": "MIT",
